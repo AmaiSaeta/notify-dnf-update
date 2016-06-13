@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+
+# FIXME sound an SE.
+# FIXME `notify` function (& load DBUS_SESSION_BUS_ADDRESS) export the other script file?
+
+NOTIF_PRG=/usr/bin/notify-send
+DNF_PRG=/usr/bin/dnf
+
+# load DBUS_SESSION_BUS_ADDRESS env-var for showing notification window.
+# see also http://unix.stackexchange.com/questions/111188/using-notify-send-with-cron/111190#111190
+if [ -r "$HOME/.dbus/Xdbus" ]; then
+	. "$HOME/.dbus/Xdbus"
+fi
+
+# Execute notifycation program.
+# Please rewrite this when use other porgram.
+notify() {
+	$NOTIF_PRG --urgency=normal --expire-time=10000 --app-name=dnf --icon=/usr/share/icons/gnome/48x48/status/software-update-available.png "$1" "$2"
+}
+
+result="`dnf check-update`"
+
+# Exit when no updates (`dnf check-update` output what is the metadata limitation date-time).
+if [ `echo "$result" | wc -l` -lt 2 ]; then
+	exit 0
+fi
+
+notify "DNF check-update" "$result"
+
+# vim: filetype=sh
